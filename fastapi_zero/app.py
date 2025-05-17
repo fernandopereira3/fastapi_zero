@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi_zero.schemas import UserSchema
 
 from fastapi_zero.schemas import message
 
@@ -13,6 +14,10 @@ app = FastAPI()
         )
 def read_root():
     return {'message': 'Hello World!'}
+
+@app.post('/users',  status_code=HTTPStatus.CREATED)
+def create_user(user: UserSchema):
+    return user
 
 @app.get('/html', response_class=HTMLResponse)
 def exercicio_aula_02():
