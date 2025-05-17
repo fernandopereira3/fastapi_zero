@@ -1,23 +1,31 @@
 from http import HTTPStatus
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi_zero.schemas import UserSchema
 
-from fastapi_zero.schemas import message
+# IMPORTACAO DO SCHEMAS DE SCHEMA.PY
+from fastapi_zero.schemas import Message, UserSchema, UserPublic, UserDB
 
 app = FastAPI()
+database = []
 
 
 @app.get('/', 
         status_code=HTTPStatus.OK,
-        response_model=message,
+        response_model=Message,
         )
 def read_root():
     return {'message': 'Hello World!'}
 
-@app.post('/users',  status_code=HTTPStatus.CREATED)
+@app.post('/users',  status_code=HTTPStatus.CREATED, response_model=UserPublic)
 def create_user(user: UserSchema):
-    return user
+    user_with_id = UserDB(
+      username=user.username,
+      email=user.email,
+      password=user.password,
+      id=len(database) + 1 
+    )
+    database.append(user_with_id)
+    return user_with_id
 
 @app.get('/html', response_class=HTMLResponse)
 def exercicio_aula_02():
