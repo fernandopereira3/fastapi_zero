@@ -39,19 +39,6 @@ def create_user(user: UserSchema):
     return user_id
 
 
-@app.get('/html', response_class=HTMLResponse)
-def exercicio_aula_02():
-    return """
-    <html>
-      <head>
-        <title>Hello World!</title>
-      </head>
-      <body>
-        <h1> Hello World! </h1>
-      </body>
-    </html>"""
-
-
 @app.get('/exercicio2', response_class=HTMLResponse)
 def exercicio2():
     return """<h1>ESTOU VIVO</h1>"""
