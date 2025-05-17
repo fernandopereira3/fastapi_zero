@@ -10,10 +10,12 @@ class UserSchema(BaseModel):
     email: EmailStr
     password: str
 
+
 class UserPublic(UserSchema):
     username: str
     email: EmailStr
     id: int
+
 
 class UserDB(UserSchema):
     id: int
