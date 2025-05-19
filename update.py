@@ -1,7 +1,7 @@
 import datetime
 import subprocess
 
-date = datetime.datetime.now().strftime('%d-%m-%y - %H:%M')
+date = datetime.datetime.now().strftime('%d-%m-%y -> %H:%M')
 
 print('Processo iniciado...')
 subprocess.run(['git', 'add', '.'])
