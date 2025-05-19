@@ -1,6 +1,6 @@
 from http import HTTPStatus
-from fastapi.testclient import TestClient
-from fastapi_zero.app import app
+from fastapi import FastAPI, HTTPException
+from fastapi_zero.app import app, database
 
 
 def test_root(client):
@@ -39,8 +39,12 @@ def test_update_user(client):
             'username': 'jose',
             'email': 'jose@fastapi.com.br',
             'password': '123456',
-        },
-    )
+        })
+    
+    if response.status_code == HTTPStatus.NOT_FOUND:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Usuário não existe'
+        )
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
         'username': 'jose',
@@ -65,6 +69,10 @@ def test_get_users(client):
 
 def test_delete_user(client):
     response = client.delete('/users/1')
+    if response.status_code == HTTPStatus.NOT_FOUND:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Usuário não existe'
+        )
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
         'username': 'jose',
@@ -76,5 +84,3 @@ def test_delete_user(client):
 def test_duno(client):
     response = client.get('/duno')
     assert response.url == 'https://fastapidozero.dunossauro.com/estavel/02/'
-
-
