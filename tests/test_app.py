@@ -32,6 +32,7 @@ def test_create_user(client):
         'id': 1,
     }
 
+
 def test_update_user(client):
     response = client.put(
         '/users/1',
@@ -39,8 +40,9 @@ def test_update_user(client):
             'username': 'jose',
             'email': 'jose@fastapi.com.br',
             'password': '123456',
-        })
-    
+        },
+    )
+
     if response.status_code == HTTPStatus.NOT_FOUND:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail='Usuário não existe'
@@ -52,6 +54,7 @@ def test_update_user(client):
         'password': '123456',
         'id': 1,
     }
+
 
 def test_get_users(client):
     response = client.get('/users')
@@ -67,6 +70,7 @@ def test_get_users(client):
         ]
     }
 
+
 def test_delete_user(client):
     response = client.delete('/users/1')
     if response.status_code == HTTPStatus.NOT_FOUND:
@@ -80,6 +84,7 @@ def test_delete_user(client):
         'password': '123456',
         'id': 1,
     }
+
 
 def test_duno(client):
     response = client.get('/duno')
