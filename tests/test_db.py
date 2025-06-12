@@ -1,12 +1,17 @@
 from dataclasses import asdict
-from fastapi_zero.models import User
-from sqlalchemy import select, event
+from fastapi_zero.models import User, table_registry
+from tests.conftest import session
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
 
-
-def test_create_user(session, mock_db_time):
-    new_user = User(username='testuser', email='testuser@example.com')
-    session.add(new_user)
-    session.commit()
+def test_create_user(session):
+    with session:
+        new_user = User(username='testuser', 
+                        email='testuser@example.com',
+                        password='testpassword'
+                        )
+        session.add(new_user)
+        session.commit()
 
     user = session.scalar(select(User).where(User.username == 'testuser'))
 
