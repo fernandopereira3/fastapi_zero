@@ -1,7 +1,8 @@
 from http import HTTPStatus
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 from fastapi_zero.models import User
 from fastapi_zero.database import get_session
 
@@ -30,9 +31,7 @@ def read_root():
 @app.post(
     '/create_users', status_code=HTTPStatus.CREATED, response_model=UserPublic
 )
-def create_user(user: UserSchema):
-    session = get_session()
-
+def create_user(user: UserSchema, session=Depends(get_session)):
     # Verifica se o banco de dados já existe
     email_exists = session.scalar(select(User).where((User.email == user.email) | (User.username == user.username)))
     if email_exists:
@@ -54,25 +53,27 @@ def create_user(user: UserSchema):
 
 
 @app.get('/users', status_code=HTTPStatus.OK, response_model=UserList)
-def get_users():
-    if not database:
+def get_users(session: Session = Depends(get_session)):
+    limit: int = 3
+    offset: int = 0
+    users = session.scalars(select(User).limit(limit).offset(offset))
+    if not users:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail='No users found in database',
+            detail='No users found',
         )
-    return {'users': database}
+    return {'users': users}
+
+
 
 
 @app.put(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
 )
-def update_user(user_id: int, user: UserSchema):
-    if user_id > len(database):
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='Usuário não existe'
-        )
-    database[user_id - 1] = UserDB(**user.model_dump(), id=user_id)
-    return database[user_id - 1]
+def update_user(user_id: int, user: UserSchema, session: Session = Depends(get_session)):
+    db_user = session.scalar(select(User).where(User.id == user_id))
+    return db_user
+
 
 
 @app.delete(
@@ -84,13 +85,3 @@ def delete_user(user_id: int):
             status_code=HTTPStatus.NOT_FOUND, detail='Usuário não existe'
         )
     return database.pop(user_id - 1)
-
-
-@app.get('/exercicio2', response_class=HTMLResponse)
-def exercicio2():
-    return """<h1>ESTOU VIVO</h1>"""
-
-
-@app.get('/duno')
-async def redirect_typer():
-    return RedirectResponse('https://fastapidozero.dunossauro.com/estavel/02/')

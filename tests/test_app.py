@@ -9,15 +9,9 @@ def test_root(client):
     assert response.status_code == HTTPStatus.OK
 
 
-def test_html(client):
-    response = client.get('/exercicio2')
-    assert response.text == '<h1>ESTOU VIVO</h1>'
-    assert response.status_code == HTTPStatus.OK
-
-
 def test_create_user(client):
     response = client.post(
-        '/users',
+        '/create_users',
         json={
             'username': 'jose',
             'email': 'jose@fastapi.com.br',
@@ -25,29 +19,6 @@ def test_create_user(client):
         },
     )
     assert response.status_code == HTTPStatus.CREATED
-    assert response.json() == {
-        'username': 'jose',
-        'email': 'jose@fastapi.com.br',
-        'password': '123456',
-        'id': 1,
-    }
-
-
-def test_update_user(client):
-    response = client.put(
-        '/users/1',
-        json={
-            'username': 'jose',
-            'email': 'jose@fastapi.com.br',
-            'password': '123456',
-        },
-    )
-
-    if response.status_code == HTTPStatus.NOT_FOUND:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='Usuário não existe'
-        )
-    assert response.status_code == HTTPStatus.OK
     assert response.json() == {
         'username': 'jose',
         'email': 'jose@fastapi.com.br',
@@ -65,9 +36,31 @@ def test_get_users(client):
                 'username': 'jose',
                 'email': 'jose@fastapi.com.br',
                 'password': '123456',
-                'id': 1,
             }
         ]
+    }
+
+
+def test_update_user(client):
+    response = client.put(
+        '/users/1',
+        json={
+            'username': 'Ailton',
+            'email': 'ailton@fastapi.com.br',
+            'password': '123456',
+        },
+    )
+
+    if response.status_code == HTTPStatus.NOT_FOUND:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND, detail='Usuário não existe'
+        )
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+            'username': 'Ailton',
+            'email': 'ailton@fastapi.com.br',
+            'password': '123456',
+            'id': 1,
     }
 
 
@@ -84,8 +77,3 @@ def test_delete_user(client):
         'password': '123456',
         'id': 1,
     }
-
-
-def test_duno(client):
-    response = client.get('/duno')
-    assert response.url == 'https://fastapidozero.dunossauro.com/estavel/02/'
