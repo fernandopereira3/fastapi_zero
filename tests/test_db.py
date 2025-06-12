@@ -2,7 +2,6 @@ from dataclasses import asdict
 from fastapi_zero.models import User, table_registry
 from tests.conftest import session
 from sqlalchemy import create_engine, select
-from sqlalchemy.orm import Session
 
 def test_create_user(session):
     with session:

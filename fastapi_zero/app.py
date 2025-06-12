@@ -1,14 +1,17 @@
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlalchemy import select
+from fastapi_zero.models import User
+from fastapi_zero.database import get_session
 
 # IMPORTACAO DO SCHEMAS DE SCHEMA.PY
 from fastapi_zero.schemas import (
     Message,
     UserSchema,
     UserPublic,
-    UserDB,
     UserList,
+    UserDB
 )
 
 app = FastAPI()
@@ -24,25 +27,30 @@ def read_root():
     return {'message': 'Hello World!'}
 
 
-@app.post('/users', status_code=HTTPStatus.CREATED, response_model=UserPublic)
-def create_user(user: UserSchema):
-    user_with_id = UserDB(
-        username=user.username,
-        email=user.email,
-        password=user.password,
-        id=len(database) + 1,
-    )
-    database.append(user_with_id)
-    return user_with_id
-
-
 @app.post(
     '/create_users', status_code=HTTPStatus.CREATED, response_model=UserPublic
 )
 def create_user(user: UserSchema):
-    user_id = UserDB(**user.model_dump(), id=len(database) + 1)
-    database.append(user_id)
-    return user_id
+    session = get_session()
+
+    # Verifica se o banco de dados já existe
+    email_exists = session.scalar(select(User).where((User.email == user.email) | (User.username == user.username)))
+    if email_exists:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='Email ou Nome já existe',
+        )
+    # Cria o usuário com um ID automático
+    user_with_id = User(
+        username=user.username,
+        email=user.email,
+        password=user.password,
+    )
+    session.add(user_with_id)
+    session.commit()
+    session.refresh(user_with_id)
+    return user_with_id
+
 
 
 @app.get('/users', status_code=HTTPStatus.OK, response_model=UserList)
