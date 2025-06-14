@@ -44,3 +44,12 @@ def _mock_db_time(model, time=datetime(2025, 1, 1)):
     event.listen(User, 'before_insert', fake_time_hook)
     yield time
     event.remove(User, 'before_insert', fake_time_hook)
+
+
+@pytest.fixture
+def user(session):
+    user = User(username='jose', email='jose@fastapi.com.br', password='123456')
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
