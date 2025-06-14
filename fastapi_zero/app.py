@@ -12,13 +12,12 @@ from fastapi_zero.schemas import (
     UserSchema,
     UserPublic,
     UserList,
-    UserDB
 )
 
 app = FastAPI()
 database = []
 
-
+# ROTA INICIAL
 @app.get(
     '/',
     status_code=HTTPStatus.OK,
@@ -27,7 +26,7 @@ database = []
 def read_root():
     return {'message': 'Hello World!'}
 
-
+# CRIAR USUARIOS
 @app.post(
     '/create_users', status_code=HTTPStatus.CREATED, response_model=UserPublic
 )
@@ -39,7 +38,7 @@ def create_user(user: UserSchema, session=Depends(get_session)):
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Email ou Nome já existe',
         )
-    # Cria o usuário com um ID automático
+# Cria o usuário com um ID automático
     user_with_id = User(
         username=user.username,
         email=user.email,
@@ -51,7 +50,7 @@ def create_user(user: UserSchema, session=Depends(get_session)):
     return user_with_id
 
 
-
+# PEGAR TODOS USUARIOS
 @app.get('/users', status_code=HTTPStatus.OK, response_model=UserList)
 def get_users(session: Session = Depends(get_session)):
     limit: int = 3
@@ -65,23 +64,48 @@ def get_users(session: Session = Depends(get_session)):
     return {'users': users}
 
 
+# ATUALIZAR USUARIOS
+@app.post(
+    '/update_user/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
+)
+def update_user(user_id: int, user: UserSchema, session: Session = Depends(get_session)):
+    user_exist = session.scalar(select(User).where(User.id == user_id))
+    if not user_exist:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Usuario nao existe',
+        )
+    else:
+        user_exist.username = user.username
+        user_exist.email = user.email
+        user_exist.password = user.password
+        session.commit()
+        session.refresh(user_exist)
+    return user_exist
 
 
+# SELECIONA UM USUARIO PELO ID
 @app.put(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
 )
-def update_user(user_id: int, user: UserSchema, session: Session = Depends(get_session)):
+def get_single_user(user_id: int, user: UserSchema, session: Session = Depends(get_session)):
     db_user = session.scalar(select(User).where(User.id == user_id))
     return db_user
 
 
-
+# DELETA USUARIOS
 @app.delete(
     '/users/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic
 )
-def delete_user(user_id: int):
-    if user_id < 1 or user_id > len(database):
+def delete_user(user_id: int, session: Session = Depends(get_session)):
+    delete_user = session.scalar(select(User).where(User.id == user_id))
+    if not delete_user:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='Usuário não existe'
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Usuario nao existe',
         )
-    return database.pop(user_id - 1)
+    else:
+        session.delete(delete_user)
+        session.commit()
+    
+    return delete_user

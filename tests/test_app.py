@@ -33,9 +33,10 @@ def test_get_users(client):
     assert response.json() == {
         'users': [
             {
-                'username': 'jose',
-                'email': 'jose@fastapi.com.br',
-                'password': '123456',
+               'username': 'jose',
+               'email': 'jose@fastapi.com.br',
+               'password': '123456',
+               'id': 1,
             }
         ]
     }
