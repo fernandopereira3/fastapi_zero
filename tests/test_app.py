@@ -59,43 +59,23 @@ def test_update_user(client):
         'email': 'jose@fastapi.com.br', 
         'password': '123456',
     })
-    print(f"Usuário criado: {create_response.json()}")
-    
-    # Verifica se o usuário existe antes de atualizar
-    get_response = client.get('/users')
-    print(f"Usuários existentes: {get_response.json()}")
-    
+    assert create_response.status_code == HTTPStatus.CREATED
     # Tenta atualizar
-    response = client.put('/users/1', json={
+    response = client.put('/update_user/1', json={
         'username': 'Ailton',
         'email': 'ailton@fastapi.com.br',
         'password': '123456',
     })
+    assert response.json() == {
+        'username': 'Ailton',
+        'email': 'ailton@fastapi.com.br',
+        'password': '123456',
+        'id': 1
+    }
+
+
+def test_delete_user(client):
+    response = client.delete('/users/1')
+    assert response.status_code == HTTPStatus.NOT_FOUND
     
-    print(f"PUT Status Code: {response.status_code}")
-    print(f"PUT Response: {response.json()}")
-    # Comentar temporariamente para ver o que está retornando
-    # assert response.json() == {
-    #     'username': 'Ailton',
-    #     'email': 'ailton@fastapi.com.br',
-    #     'password': '123456',
-    #     'id': 1
-    # }
-
-
-#def test_delete_user(client):
-#    try:
-#        response = client.delete('/users/1')
-#        assert response.status_code == HTTPStatus.OK
-#        assert response.json() == {
-#            'username': 'jose',
-#            'email': 'jose@fastapi.com.br',
-#            'password': '123456',
-#            'id': 1,
-#        }
-#    except HTTPException as e:
-#        if e.status_code == HTTPStatus.NOT_FOUND:
-#            raise HTTPException(
-#                status_code=HTTPStatus.NOT_FOUND,
-#                detail='Usuário não existe'
-#            )
+ 
