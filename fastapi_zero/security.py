@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 TOKEN_EXPIRE = 30
 SECRET_KEY = 'PROVISORIO'
-ALGORITHM = 'SHA256'
+ALGORITHM = 'HS256'
 
 context = PasswordHash.recommended()
 
@@ -19,7 +19,7 @@ def set_password(plain_password: str, hashed_password: str):
 def create_access_token(data: dict):
     to_encode = data.copy()
 
-    to_encode.update({'exp': datetime.now(tz=ZoneInfo('America/Sao_Paulo')) + timedelta(minutes=TOKEN_EXPIRE)})
+    to_encode.update({'exp': datetime.now(tz=ZoneInfo('UTC')) + timedelta(minutes=TOKEN_EXPIRE)})
     encodado_jwt = encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
     return encodado_jwt
