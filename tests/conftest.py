@@ -1,3 +1,4 @@
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
@@ -6,6 +7,7 @@ from datetime import datetime
 from fastapi_zero.app import app
 from fastapi_zero.models import table_registry, User
 from fastapi_zero.database import get_session
+from fastapi_zero.security import get_password
 from contextlib import contextmanager
 from sqlalchemy.pool import StaticPool
 
@@ -46,10 +48,23 @@ def _mock_db_time(model, time=datetime(2025, 1, 1)):
     event.remove(User, 'before_insert', fake_time_hook)
 
 
+
 @pytest.fixture
 def user(session):
-    user = User(username='jose', email='jose@fastapi.com.br', password='123456')
+    passoword = '123456'
+    user = User(username='jose', email='jose@fastapi.com.br', password=get_password(passoword))
     session.add(user)
     session.commit()
     session.refresh(user)
+    user.clean_password = passoword
+
     return user
+
+
+@pytest.fixture
+def token(client, user):
+    response = client.post(
+        '/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+    return response.json()
